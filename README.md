@@ -6,6 +6,7 @@ A production-ready **Node.js / TypeScript** microservices platform with a **Next
 - 🤖 Multi-provider LLM support with intelligent routing
 - 🔄 Workflow automation with scheduling
 - 🔐 JWT-based authentication & user management
+- 🔑 Secure AI provider configuration management with encryption
 - 📨 Email & webhook notifications
 - ⚡ Redis-powered caching & job queuing
 - 🚀 Fully containerized with Docker Compose
@@ -164,6 +165,27 @@ docker compose logs -f ai-worker
 | Groq            | `GROQ_API_KEY`      | https://console.groq.com                |
 | Azure OpenAI    | `AZURE_OPENAI_KEY` / `AZURE_ENDPOINT` | Azure portal |
 | Ollama (local)  | –                   | Run locally; set `OLLAMA_ENDPOINT`     |
+
+### AI Configuration Storage (Optional)
+
+| Variable             | Description                                | Example / Default              |
+|----------------------|--------------------------------------------|--------------------------------|
+| `ENCRYPTION_MASTER_KEY` | Master key for encrypting stored API keys | Any strong random string (optional) |
+
+**Note:** If `ENCRYPTION_MASTER_KEY` is not set, the system derives it from `JWT_SECRET`. For production, set this to a unique strong key generated with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+
+#### AI Config Management Features
+
+Users can securely store and manage API keys for multiple AI providers in their Settings:
+
+- **Encrypted Storage**: API keys encrypted with AES-256-GCM at rest
+- **Multi-Provider Support**: Configure 9+ LLM providers (OpenAI, Anthropic, Google, Mistral, Cohere, Groq, Together, Azure, OpenRouter)
+- **Local Development**: Use `AI_PROVIDER_API_KEY` environment variables for testing (e.g., `AI_OPENAI_API_KEY=sk-...`)
+- **Configuration Validation**: Agents can require specific provider configs, showing helpful prompts if missing
+- **Connection Testing**: Test and verify each saved configuration
+- **Security**: Keys never logged, never shown in full, can be revoked instantly
+
+See [User Guide: AI Configuration](./USER_GUIDE_AI_CONFIG.md) for usage instructions.
 
 ---
 
@@ -604,6 +626,17 @@ For production, consider:
 - Configuring auto-scaling and load balancing
 - Running database migrations before service restarts
 - Monitoring with Prometheus, Datadog, or similar
+
+---
+
+## Documentation
+
+### Feature Guides
+
+- [**AI Configuration Management**](./AI_CONFIG_IMPLEMENTATION.md) - Comprehensive implementation guide for developers
+- [**User Guide: AI Configuration**](./USER_GUIDE_AI_CONFIG.md) - How to use the AI config feature
+- [**Integration Examples**](./INTEGRATION_EXAMPLES.md) - Code examples for implementing config validation
+- [**Implementation Guide: KB, Logging, Tools & Webhooks**](./IMPLEMENTATION_GUIDE.md) - Other features
 
 ---
 
