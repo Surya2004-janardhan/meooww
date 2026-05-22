@@ -65,10 +65,21 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
+import { connectQueue } from './queue/amqp';
+import { startWorker } from './worker';
+
 async function bootstrap() {
   await connectRedis();
+  
+  try {
+    await connectQueue();
+    await startWorker();
+  } catch (error) {
+    console.error('[Queue/Worker] Initial connection failed, but API is running. Retrying in background...', error);
+  }
+  
   app.listen(PORT, () => {
-    console.log(`[node-api] listening on :${PORT}`);
+    console.log(`[node-backend] listening on :${PORT}`);
   });
 }
 

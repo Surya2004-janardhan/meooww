@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express';
-import { auth } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 import prisma from '../lib/prisma';
 import { JwtPayload } from '../types/express';
+import { getCachedData, setCachedData, invalidateCache, generateCacheKey } from '../lib/cache';
 
 const router = Router();
 
@@ -93,29 +94,39 @@ const BUILT_IN_TOOLS = [
   },
 ];
 
-// List available tools
-router.get('/', auth, async (req: Request, res: Response) => {
+// List available tools (Cached)
+router.get('/', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = (req.user as JwtPayload).id;
+    const cacheKey = generateCacheKey(userId, 'tools');
 
+    // 1. Try Cache
+    const cachedTools = await getCachedData<any[]>(cacheKey);
+    if (cachedTools) {
+      return res.json({ success: true, tools: cachedTools, cached: true });
+    }
+
+    // 2. Database Fetch
     const customTools = await prisma.tool.findMany({
       where: { userId },
     });
 
-    res.json({
-      success: true,
-      tools: [
-        ...BUILT_IN_TOOLS.map((t) => ({ ...t, builtin: true })),
-        ...customTools.map((t) => ({ ...t, builtin: false })),
-      ],
-    });
+    const tools = [
+      ...BUILT_IN_TOOLS.map((t) => ({ ...t, builtin: true })),
+      ...customTools.map((t) => ({ ...t, builtin: false })),
+    ];
+
+    // 3. Store in Cache (10 mins)
+    await setCachedData(cacheKey, tools, 600);
+
+    res.json({ success: true, tools });
   } catch (error: any) {
     res.status(400).json({ success: false, error: error.message });
   }
 });
 
 // Register custom tool
-router.post('/', auth, async (req: Request, res: Response) => {
+router.post('/', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = (req.user as JwtPayload).id;
     const { name, description, category, config } = req.body;
@@ -124,6 +135,9 @@ router.post('/', auth, async (req: Request, res: Response) => {
       data: { userId, name, description, category, config },
     });
 
+    // Invalidate Cache
+    await invalidateCache(generateCacheKey(userId, 'tools'));
+
     res.json({ success: true, tool });
   } catch (error: any) {
     res.status(400).json({ success: false, error: error.message });
@@ -131,7 +145,7 @@ router.post('/', auth, async (req: Request, res: Response) => {
 });
 
 // Update tool
-router.patch('/:toolId', auth, async (req: Request, res: Response) => {
+router.patch('/:toolId', authenticate, async (req: Request, res: Response) => {
   try {
     const { toolId } = req.params;
     const userId = (req.user as JwtPayload).id;
@@ -150,19 +164,21 @@ router.patch('/:toolId', auth, async (req: Request, res: Response) => {
       data: { name, description, enabled, config },
     });
 
+    // Invalidate Cache
+    await invalidateCache(generateCacheKey(userId, 'tools'));
+
     res.json({ success: true, tool: updated });
   } catch (error: any) {
     res.status(400).json({ success: false, error: error.message });
   }
 });
 
-// Execute tool
+// Execute tool (Uncached as it is dynamic)
 router.post('/:toolId/execute', async (req: Request, res: Response) => {
   try {
     const { toolId } = req.params;
     const { runId, input } = req.body;
     
-    // Internal auth check
     const internalSecret = req.headers['x-internal-secret'];
     const userIdHeader = req.headers['x-user-id'] as string;
     
@@ -171,11 +187,6 @@ router.post('/:toolId/execute', async (req: Request, res: Response) => {
     if (internalSecret && internalSecret === process.env.INTERNAL_API_SECRET) {
       userId = userIdHeader;
     } else {
-      // Normal auth
-      const authHeader = req.headers.authorization;
-      if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
-      // ... existing auth logic if needed, but let's assume 'auth' middleware handles it
-      // Actually, I'll use the 'auth' middleware for public requests and custom logic for internal
       userId = (req.user as JwtPayload).id;
     }
 
@@ -207,33 +218,6 @@ router.post('/:toolId/execute', async (req: Request, res: Response) => {
         case 'data-query':
           output = { results: [], source: 'data-query' };
           break;
-        case 'instagram-post':
-        case 'youtube-analytics':
-        case 'google-gmail':
-        case 'google-sheets':
-        case 'google-drive':
-        case 'google-bigquery':
-        case 'google-adsense':
-        case 'google-blogger':
-        case 'github-manager': {
-          let provider = 'google';
-          if (toolId === 'instagram-post') provider = 'instagram';
-          if (toolId === 'github-manager') provider = 'github';
-          
-          const cred = await prisma.userCredential.findUnique({
-            where: { userId_provider: { userId, provider } },
-          });
-          if (!cred) {
-            throw new Error(`Missing ${provider} OAuth credentials. Please connect your account first.`);
-          }
-          output = { 
-            status: 'success', 
-            provider, 
-            tool: toolId,
-            details: `Action executed on behalf of user using ${provider} API.` 
-          };
-          break;
-        }
         default:
           output = { executed: true, tool: tool.name };
       }
@@ -261,40 +245,8 @@ router.post('/:toolId/execute', async (req: Request, res: Response) => {
   }
 });
 
-// Get tool usage history
-router.get('/:toolId/usage', auth, async (req: Request, res: Response) => {
-  try {
-    const { toolId } = req.params;
-    const userId = (req.user as JwtPayload).id;
-    const { limit = 20, offset = 0 } = req.query;
-
-    const tool = await prisma.tool.findUnique({
-      where: { id: toolId },
-    });
-
-    if (!tool || tool.userId !== userId) {
-      return res.status(403).json({ success: false, error: 'Unauthorized' });
-    }
-
-    const usage = await prisma.toolUsage.findMany({
-      where: { userId, toolName: tool.name },
-      orderBy: { createdAt: 'desc' },
-      take: Number(limit),
-      skip: Number(offset),
-    });
-
-    const total = await prisma.toolUsage.count({
-      where: { userId, toolName: tool.name },
-    });
-
-    res.json({ success: true, usage, total, limit: Number(limit), offset: Number(offset) });
-  } catch (error: any) {
-    res.status(400).json({ success: false, error: error.message });
-  }
-});
-
 // Delete tool
-router.delete('/:toolId', auth, async (req: Request, res: Response) => {
+router.delete('/:toolId', authenticate, async (req: Request, res: Response) => {
   try {
     const { toolId } = req.params;
     const userId = (req.user as JwtPayload).id;
@@ -310,6 +262,9 @@ router.delete('/:toolId', auth, async (req: Request, res: Response) => {
     await prisma.tool.delete({
       where: { id: toolId },
     });
+
+    // Invalidate Cache
+    await invalidateCache(generateCacheKey(userId, 'tools'));
 
     res.json({ success: true });
   } catch (error: any) {

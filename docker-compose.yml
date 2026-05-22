@@ -1,42 +1,28 @@
 version: "3.9"
 
-# Database: Neon PostgreSQL (external, serverless) — no local postgres container needed.
-# Set DATABASE_URL and DIRECT_URL in your .env file pointing to your Neon project.
+# Database: Neon PostgreSQL (external, serverless)
+# Message Broker: CloudAMQP (external)
+# Redis: Redis Labs (external) or Local
 
 services:
-  # ─── Redis (cache + rate-limit store) ─────────────────────────
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-
-  # ─── Node.js Main Backend ─────────────────────────────────────
-  node-api:
-    build: ./backend/node-api
+  # ─── Node Backend (Consolidated API + Worker) ────────────────
+  node-backend:
+    build: ./backend/node-backend
     restart: unless-stopped
     env_file: .env
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - PORT=4000
-      - REDIS_URL=redis://redis:6379/0
-      - AI_WORKER_URL=http://ai-worker:5000
     ports:
       - "4000:4000"
-    depends_on:
-      - redis
-      - ai-worker
 
-  # ─── AI Worker (internal only) ──────────────────────────────
-  ai-worker:
-    build: ./backend/node-worker
+  # ─── Python Backend (AI/ML Operations) ───────────────────────
+  python-backend:
+    build: ./backend/python-backend
     restart: unless-stopped
     env_file: .env
-    environment:
-      - REDIS_URL=redis://redis:6379/0
-      - INTERNAL_API_SECRET=${INTERNAL_API_SECRET}
-    depends_on:
-      - redis
+    ports:
+      - "8000:8000"
 
   # ─── Next.js Frontend ─────────────────────────────────────────
   frontend:
@@ -48,4 +34,4 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - node-api
+      - node-backend

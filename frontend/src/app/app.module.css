@@ -14,9 +14,11 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 80px 24px;
+  padding: 100px 24px;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, #fff 100%);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  border: 2px solid #fff;
+  box-shadow: var(--shadow-lg);
 }
 
 .heroCopy {
@@ -32,91 +34,79 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent-primary);
 }
 
 .badge {
-  background: rgba(99, 102, 241, 0.15);
+  background: var(--bg-primary);
   color: var(--accent-primary);
-  padding: 4px 12px;
+  padding: 6px 16px;
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 2px solid var(--accent-primary);
 }
 
 .title {
-  font-size: clamp(2.5rem, 8vw, 4.5rem);
-  line-height: 1.1;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 1;
   font-weight: 800;
-  background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
 }
 
 .subtitle {
-  font-size: 1.25rem;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
   color: var(--text-secondary);
   line-height: 1.6;
-  max-width: 600px;
+  max-width: 650px;
   margin: 0 auto;
 }
 
 .heroActions {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   justify-content: center;
-  margin-top: 24px;
+  margin-top: 32px;
+  flex-wrap: wrap;
 }
 
 /* Buttons */
 .primaryButton {
   background: var(--accent-primary);
   color: #fff;
-  padding: 16px 32px;
+  padding: 18px 36px;
   border-radius: var(--radius-md);
-  font-weight: 600;
-  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3);
+  font-weight: 700;
   font-size: 1rem;
+  box-shadow: 0 10px 20px rgba(74, 103, 65, 0.2);
+  border-bottom: 4px solid #2d3e28;
 }
 
 .primaryButton:hover {
-  background: #4f46e5;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  background: #3a5133;
+  border-bottom-width: 2px;
+  margin-bottom: 2px;
 }
 
 .secondaryButton {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  padding: 16px 32px;
+  background: #fff;
+  color: var(--text-primary);
+  padding: 18px 36px;
   border-radius: var(--radius-md);
-  font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 700;
+  border: 2px solid var(--accent-primary);
   font-size: 1rem;
 }
 
 .secondaryButton:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-tertiary);
   transform: translateY(-2px);
-}
-
-.ghostButton {
-  background: transparent;
-  color: var(--text-secondary);
-  padding: 16px 32px;
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-.ghostButton:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.05);
 }
 
 /* Cards Section */
@@ -130,101 +120,75 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  border-bottom: 2px solid var(--bg-tertiary);
+  padding-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .sectionLabel {
-  color: var(--accent-primary);
-  font-size: 0.8rem;
-  font-weight: 700;
+  color: var(--accent-secondary);
+  font-size: 0.85rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  margin-bottom: 12px;
+  letter-spacing: 0.2em;
 }
 
 .sectionTitle {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-.pill {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 20px;
-  border-radius: var(--radius-full);
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  font-weight: 500;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
 /* Grid */
 .grid3 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
 }
 
 .routeCard {
-  padding: 40px;
+  padding: 32px;
   border-radius: var(--radius-md);
   transition: all var(--transition-slow);
   display: flex;
   flex-direction: column;
   gap: 20px;
-  position: relative;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #fff;
+  border: 2px solid var(--bg-tertiary);
 }
 
 .routeCard:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: var(--accent-primary);
   transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 40px rgba(74, 103, 65, 0.1);
 }
 
 .routeTitle {
   font-size: 1.5rem;
-  font-weight: 700;
-  color: #fff;
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
 .cardText {
   color: var(--text-secondary);
-  line-height: 1.7;
+  line-height: 1.6;
   font-size: 1rem;
 }
 
-.tagRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.tag {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--accent-primary);
-  background: rgba(99, 102, 241, 0.1);
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(99, 102, 241, 0.1);
-}
-
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .page {
-    padding: 60px 20px;
+    padding: 40px 16px;
     gap: 60px;
   }
-  .sectionTitle {
-    font-size: 2rem;
+  .hero {
+    padding: 60px 16px;
   }
   .heroActions {
     flex-direction: column;
     width: 100%;
   }
-  .primaryButton, .secondaryButton, .ghostButton {
+  .primaryButton, .secondaryButton {
     width: 100%;
   }
 }

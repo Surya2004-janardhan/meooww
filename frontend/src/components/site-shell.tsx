@@ -14,30 +14,33 @@ const NAV_ITEMS = [
   { href: '/runs', label: 'Runs', hint: 'History' },
 ];
 
+import { SetupBanner } from './setup-banner';
+
 export function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className={styles.shell}>
+    <div className={`${styles.shell} paw-bg`}>
+      <SetupBanner isSetup={false} />
       <header className={styles.navbar}>
         <Link href="/" className={styles.brand}>
           <img src="/assets/logo.png" alt="Meooww Logo" className={styles.brandMark} style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
-          <span>
-            <span className={styles.brandName}>Meooww</span>
-            <span className={styles.brandTag}>Purr-fect agents & scheduled workflows</span>
-          </span>
+          <span className={styles.brandName}>Meooww</span>
         </Link>
 
-        <nav className={styles.nav} aria-label="Primary">
-          {NAV_ITEMS.map((item) => {
-            const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
-            return (
-              <Link key={item.href} href={item.href} className={`${styles.navLink} ${active ? styles.navLinkActive : ''}`}>
-                <span className={styles.navLabel}>{item.label}</span>
-                <span className={styles.navHint}>{item.hint}</span>
-              </Link>
-            );
-          })}
+        <nav className={styles.nav}>
+          <Link href="/agents" className={`${styles.navLink} ${pathname === '/agents' ? styles.navLinkActive : ''}`}>
+            <span className={styles.navLabel}>Free Agents</span>
+          </Link>
+          <Link href="/workflows" className={`${styles.navLink} ${pathname === '/workflows' ? styles.navLinkActive : ''}`}>
+            <span className={styles.navLabel}>AI Flows</span>
+          </Link>
+          <Link href="/tools" className={`${styles.navLink} ${pathname === '/tools' ? styles.navLinkActive : ''}`}>
+            <span className={styles.navLabel}>Tools</span>
+          </Link>
+          <Link href="/billing" className={`${styles.navLink} ${pathname === '/billing' ? styles.navLinkActive : ''}`}>
+            <span className={styles.navLabel}>Pro</span>
+          </Link>
         </nav>
 
         <div className={styles.nav} style={{ marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>

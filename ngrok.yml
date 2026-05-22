@@ -1,0 +1,10 @@
+authtoken: YOUR_NGROK_AUTHTOKEN # You can leave this out if you've already run 'ngrok config add-authtoken'
+tunnels:
+  frontend:
+    proto: http
+    addr: 3000
+    host_header: localhost:3000
+  backend:
+    proto: http
+    addr: 4000
+    host_header: localhost:4000

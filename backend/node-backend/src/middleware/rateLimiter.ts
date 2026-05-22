@@ -1,24 +1,15 @@
 import rateLimit from 'express-rate-limit';
-import { redisClient } from '../lib/redis';
 
-function makeStore() {
-  // Use memory store if Redis not ready (fallback for dev)
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { RedisStore } = require('rate-limit-redis');
-    return new RedisStore({ sendCommand: (...args: string[]) => (redisClient as any).sendCommand(args) });
-  } catch {
-    return undefined;
-  }
-}
+// We are using the built-in MemoryStore for now to ensure 
+// the backend boots up without Redis compatibility issues.
+// This is perfect for local development and testing.
 
 export const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
+  windowMs: 15 * 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later' },
-  store: makeStore(),
 });
 
 export const authLimiter = rateLimit({
@@ -30,7 +21,7 @@ export const authLimiter = rateLimit({
 });
 
 export const aiLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 min
+  windowMs: 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,

@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
-import { auth } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 import prisma from '../lib/prisma';
 import { JwtPayload } from '../types/express';
 
 const router = Router();
 
 // Get execution log for a run
-router.get('/:runId', auth, async (req: Request, res: Response) => {
+router.get('/:runId', authenticate, async (req: Request, res: Response) => {
   try {
     const { runId } = req.params;
     const userId = (req.user as JwtPayload).id;
@@ -27,7 +27,7 @@ router.get('/:runId', auth, async (req: Request, res: Response) => {
 });
 
 // List execution logs for a workflow or agent
-router.get('/', auth, async (req: Request, res: Response) => {
+router.get('/', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = (req.user as JwtPayload).id;
     const { workflowId, agentId, limit = 20, offset = 0 } = req.query;
@@ -59,7 +59,7 @@ router.get('/', auth, async (req: Request, res: Response) => {
 });
 
 // Get detailed trace/steps for an execution log
-router.get('/:runId/trace', auth, async (req: Request, res: Response) => {
+router.get('/:runId/trace', authenticate, async (req: Request, res: Response) => {
   try {
     const { runId } = req.params;
     const userId = (req.user as JwtPayload).id;
@@ -101,7 +101,7 @@ router.get('/:runId/trace', auth, async (req: Request, res: Response) => {
 });
 
 // Create execution log (called by ai-worker before run)
-router.post('/', auth, async (req: Request, res: Response) => {
+router.post('/', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = (req.user as JwtPayload).id;
     const { runId, agentId, workflowId } = req.body;
@@ -124,7 +124,7 @@ router.post('/', auth, async (req: Request, res: Response) => {
 });
 
 // Update execution log with completion
-router.patch('/:runId', auth, async (req: Request, res: Response) => {
+router.patch('/:runId', authenticate, async (req: Request, res: Response) => {
   try {
     const { runId } = req.params;
     const userId = (req.user as JwtPayload).id;
@@ -150,7 +150,7 @@ router.patch('/:runId', auth, async (req: Request, res: Response) => {
 });
 
 // Add step to execution log
-router.post('/:runId/steps', auth, async (req: Request, res: Response) => {
+router.post('/:runId/steps', authenticate, async (req: Request, res: Response) => {
   try {
     const { runId } = req.params;
     const userId = (req.user as JwtPayload).id;

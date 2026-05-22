@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { auth } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 import prisma from '../lib/prisma';
 import { JwtPayload } from '../types/express';
 import crypto from 'crypto';
@@ -12,7 +12,7 @@ function generateSecret(): string {
 }
 
 // List webhooks
-router.get('/', auth, async (req: Request, res: Response) => {
+router.get('/', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = (req.user as JwtPayload).id;
 
@@ -35,7 +35,7 @@ router.get('/', auth, async (req: Request, res: Response) => {
 });
 
 // Create webhook
-router.post('/', auth, async (req: Request, res: Response) => {
+router.post('/', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = (req.user as JwtPayload).id;
     const { url, events, retries = 3, timeout = 30000 } = req.body;
@@ -74,7 +74,7 @@ router.post('/', auth, async (req: Request, res: Response) => {
 });
 
 // Update webhook
-router.patch('/:webhookId', auth, async (req: Request, res: Response) => {
+router.patch('/:webhookId', authenticate, async (req: Request, res: Response) => {
   try {
     const { webhookId } = req.params;
     const userId = (req.user as JwtPayload).id;
@@ -106,7 +106,7 @@ router.patch('/:webhookId', auth, async (req: Request, res: Response) => {
 });
 
 // Delete webhook
-router.delete('/:webhookId', auth, async (req: Request, res: Response) => {
+router.delete('/:webhookId', authenticate, async (req: Request, res: Response) => {
   try {
     const { webhookId } = req.params;
     const userId = (req.user as JwtPayload).id;
@@ -130,7 +130,7 @@ router.delete('/:webhookId', auth, async (req: Request, res: Response) => {
 });
 
 // Test webhook
-router.post('/:webhookId/test', auth, async (req: Request, res: Response) => {
+router.post('/:webhookId/test', authenticate, async (req: Request, res: Response) => {
   try {
     const { webhookId } = req.params;
     const userId = (req.user as JwtPayload).id;
@@ -168,7 +168,7 @@ router.post('/:webhookId/test', auth, async (req: Request, res: Response) => {
 });
 
 // Get webhook deliveries/history
-router.get('/:webhookId/deliveries', auth, async (req: Request, res: Response) => {
+router.get('/:webhookId/deliveries', authenticate, async (req: Request, res: Response) => {
   try {
     const { webhookId } = req.params;
     const userId = (req.user as JwtPayload).id;

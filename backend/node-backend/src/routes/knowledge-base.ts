@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
-import { auth } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 import prisma from '../lib/prisma';
 import { JwtPayload } from '../types/express';
 
 const router = Router();
 
 // Create or get knowledge base
-router.post('/bases', auth, async (req: Request, res: Response) => {
+router.post('/bases', authenticate, async (req: Request, res: Response) => {
   try {
     const { name, description } = req.body;
     const userId = (req.user as JwtPayload).id;
@@ -22,7 +22,7 @@ router.post('/bases', auth, async (req: Request, res: Response) => {
 });
 
 // List knowledge bases
-router.get('/bases', auth, async (req: Request, res: Response) => {
+router.get('/bases', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = (req.user as JwtPayload).id;
 
@@ -38,7 +38,7 @@ router.get('/bases', auth, async (req: Request, res: Response) => {
 });
 
 // Upload document to knowledge base
-router.post('/bases/:baseId/documents', auth, async (req: Request, res: Response) => {
+router.post('/bases/:baseId/documents', authenticate, async (req: Request, res: Response) => {
   try {
     const { baseId } = req.params;
     const { fileName, fileUrl, fileSize, fileType, textContent } = req.body;
@@ -75,7 +75,7 @@ router.post('/bases/:baseId/documents', auth, async (req: Request, res: Response
 });
 
 // Search knowledge base
-router.post('/bases/:baseId/search', auth, async (req: Request, res: Response) => {
+router.post('/bases/:baseId/search', authenticate, async (req: Request, res: Response) => {
   try {
     const { baseId } = req.params;
     const { query, limit = 5 } = req.body;
@@ -107,7 +107,7 @@ router.post('/bases/:baseId/search', auth, async (req: Request, res: Response) =
 });
 
 // Delete document
-router.delete('/bases/:baseId/documents/:docId', auth, async (req: Request, res: Response) => {
+router.delete('/bases/:baseId/documents/:docId', authenticate, async (req: Request, res: Response) => {
   try {
     const { baseId, docId } = req.params;
     const userId = (req.user as JwtPayload).id;
